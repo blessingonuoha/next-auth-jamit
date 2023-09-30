@@ -1,39 +1,46 @@
-import type { NextAuthOptions } from 'next-auth'
-import GitHubProvider from 'next-auth/providers/github'
-import CredentialsProvider from 'next-auth/providers/credentials'
+// catch-all for all providers
 
-export const options: NextAuthOptions = {
-    providers: [
-        GitHubProvider({
-            clientId: process.env.GITHUB_ID as string,
-            clientSecret: process.env.GITHUB_SECRET as string,
-        }),
-        CredentialsProvider({
-            name: "Credentials",
-            credentials: {
-                username: {
-                    label: "Username:",
-                    type: "text",
-                    placeholder: "your-cool-username"
-                },
-                password: {
-                    label: "Password:",
-                    type: "password",
-                    placeholder: "your-awesome-password"
-                }
-            },
-            async authorize(credentials) {
-                // This is where you need to retrieve user data 
-                // to verify with credentials
-                // Docs: https://next-auth.js.org/configuration/providers/credentials
-                const user = { id: "42", name: "Dave", password: "nextauth" }
+import type { NextAuthOptions } from "next-auth";
+import GitHubProvider from "next-auth/providers/github";
+import CredentialsProvider from "next-auth/providers/credentials";
 
-                if (credentials?.username === user.name && credentials?.password === user.password) {
-                    return user
-                } else {
-                    return null
-                }
-            }
-        })
-    ],
-}
+export const authOptions: NextAuthOptions = {
+  providers: [
+    GitHubProvider({
+      // OAuth with githut provider
+      clientId: process.env.GITHUB_ID as string,
+      clientSecret: process.env.GITHUB_SECRET as string,
+    }),
+
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        username: {
+          label: "Username: ",
+          type: "text",
+          placeholder: "johndoe",
+        },
+        password: {
+          label: "Password",
+          type: "password",
+          placeholder: "*********",
+        },
+      },
+      async authorize(credentials, req) {
+        const user = { id: "1", name: "meg", password: "jamit" };
+        if (credentials && "username" in credentials) {
+          const { username, password } = credentials;
+          if (username === user.name && password === user.password) {
+            return user;
+          } else {
+            return null;
+          }
+        } else {
+          // Handle case when 'credentials' is undefined or does not have 'username'
+          return null;
+        }
+      },
+    }),
+  ],
+  // we cane define pages custom here
+};
